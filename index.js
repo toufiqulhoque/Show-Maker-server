@@ -15,6 +15,7 @@ async function run() {
         const database = client.db("movie-wishlist");
         const serviceCollection = database.collection("serviceDetail")
         const reviewCollection = database.collection("reviewDetail")
+        const usersCollection = database.collection("users");
         // const user = { name: 'mahiya mahi', email: 'mahi@gmail.com', descriptio: 'lorem20' }
         // serviceCollection.insertOne(user)
 
@@ -53,6 +54,28 @@ async function run() {
             const cursor = serviceCollection.find(query, options)
             const result = await cursor.toArray();
             res.send(result);
+        })
+        //firebase register data in put into database
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user)
+            console.log(result)
+            res.json(result)
+        });
+
+        //finding admin role/Check admin
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            console.log('email ::::', email)
+            const query = { email: email };
+            console.log('query:::', query)
+            const user = await usersCollection.findOne(query)
+            console.log('user', user)
+            let isAdmin = false;
+            if (user?.role === 'admin') {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin });
         })
         //   single service
         app.get('/services/:id', async (req, res) => {
